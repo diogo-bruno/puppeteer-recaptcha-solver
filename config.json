@@ -1,0 +1,26 @@
+{
+  "resolverCaptchaImage": false,
+  "closePageFinal": false,
+  "closeBrowserFinal": false,
+  "resolveOnlyImages": ["fire hydrants", "a fire hydrant", "bicycles", "vehicle", "motorcycles", "crosswalks", "cars", "bus", "buses", "tractors", "stairs", "parking meters"],
+  "resolveLengthImages": 0,
+  "maxAttemptsImages": 50,
+  "minScore": 0.5,
+  "typesImages": {
+    "cars": ["cars", "car", "vehicle"],
+    "vehicle": ["cars", "car", "vehicle", "automotive exterior", "mode of transport"],
+    "bus": ["bus", "school bus", "minibus", "omnibus", "trucks", "tourism", "vehicle"],
+    "buses": ["bus", "school bus", "minibus", "omnibus", "trucks", "tourism"],
+    "motorcycles": ["motorcycles", "motorcycle"],
+    "bicycles": ["bicycles", "bikecycle", "mountain bike", "bike", "velocipede", "bicycle frame"],
+    "crosswalks": ["crosswalk", "crosswalks", "pedestrian crossing", "crossing", "flooring"],
+    "statues": ["statue", "statues", "sculpture", "figure", "statuette"],
+    "parking meters": ["parking meters", "parking meter"],
+    "traffic lights": ["traffic light", "traffic lights"],
+    "taxis": ["taxis", "taxi", "yellow cap", "taxi-cap"],
+    "a fire hydrant": ["hydrant", "hydrants", "fire hydrant", "a fire hydrant"],
+    "fire hydrants": ["hydrant", "hydrants", "fire hydrant", "a fire hydrant"],
+    "tractors": ["tractors", "tractor", "trator"],
+    "stairs": ["stairs", "stair", "steps", "step"]
+  }
+}
