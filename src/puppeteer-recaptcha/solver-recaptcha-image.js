@@ -1,4 +1,4 @@
-const download = require('image-downloader');
+const download = require('../image-downloader');
 var imageSizeOf = require('image-size');
 var Jimp = require('jimp');
 const fs = require('fs');

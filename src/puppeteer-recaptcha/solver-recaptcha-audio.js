@@ -26,12 +26,12 @@ async function solverByAudio(page) {
     await page.waitForFunction(() => {
       const iframe = document.querySelector('iframe[src*="api2/bframe"]');
       if (!iframe) return false;
-      return !!iframe.contentWindow.document.querySelector('.rc-audiochallenge-tdownload-link');
+      return !!iframe.contentWindow.document.querySelector('#audio-source');
     });
 
     const audioLink = await page.evaluate(() => {
       const iframe = document.querySelector('iframe[src*="api2/bframe"]');
-      return iframe.contentWindow.document.querySelector('.rc-audiochallenge-tdownload-link').href;
+      return iframe.contentWindow.document.querySelector('#audio-source').src;
     });
 
     const audioBytes = await page.evaluate((audioLink) => {
@@ -46,7 +46,7 @@ async function solverByAudio(page) {
 
     const audioTranscript = await getTextAudio(audioBytes);
 
-    console.info('Writing audio');
+    console.info('Writing audio - ' + audioTranscript);
 
     const input = await bframe.$('#audio-response');
     await input.click({delay: utils.rdn(30, 1000)});
