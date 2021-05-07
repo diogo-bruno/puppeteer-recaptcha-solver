@@ -1,107 +1,21 @@
 var querystring = require('querystring');
-var axios = require('../axios');
+
+var got = require('got');
+
 var languages = require('./translate-languages');
 
-var window = {
-  TKK: '0',
-};
-
-function sM(a) {
-  var b;
-  if (null !== yr) b = yr;
-  else {
-    b = wr(String.fromCharCode(84));
-    var c = wr(String.fromCharCode(75));
-    b = [b(), b()];
-    b[1] = c();
-    b = (yr = window[b.join(c())] || '') || '';
+function extract(key, res) {
+  var re = new RegExp(`"${key}":".*?"`);
+  var result = re.exec(res.body);
+  if (result !== null) {
+    return result[0].replace(`"${key}":"`, '').slice(0, -1);
   }
-  var d = wr(String.fromCharCode(116)),
-    c = wr(String.fromCharCode(107)),
-    d = [d(), d()];
-  d[1] = c();
-  c = '&' + d.join('') + '=';
-  d = b.split('.');
-  b = Number(d[0]) || 0;
-  for (var e = [], f = 0, g = 0; g < a.length; g++) {
-    var l = a.charCodeAt(g);
-    128 > l
-      ? (e[f++] = l)
-      : (2048 > l
-          ? (e[f++] = (l >> 6) | 192)
-          : (55296 == (l & 64512) && g + 1 < a.length && 56320 == (a.charCodeAt(g + 1) & 64512)
-              ? ((l = 65536 + ((l & 1023) << 10) + (a.charCodeAt(++g) & 1023)), (e[f++] = (l >> 18) | 240), (e[f++] = ((l >> 12) & 63) | 128))
-              : (e[f++] = (l >> 12) | 224),
-            (e[f++] = ((l >> 6) & 63) | 128)),
-        (e[f++] = (l & 63) | 128));
-  }
-  a = b;
-  for (f = 0; f < e.length; f++) (a += e[f]), (a = xr(a, '+-a^+6'));
-  a = xr(a, '+-3^+b+-f');
-  a ^= Number(d[1]) || 0;
-  0 > a && (a = (a & 2147483647) + 2147483648);
-  a %= 1e6;
-  return c + (a.toString() + '.' + (a ^ b));
+  return '';
 }
 
-var yr = null;
-var wr = function (a) {
-    return function () {
-      return a;
-    };
-  },
-  xr = function (a, b) {
-    for (var c = 0; c < b.length - 2; c += 3) {
-      var d = b.charAt(c + 2),
-        d = 'a' <= d ? d.charCodeAt(0) - 87 : Number(d),
-        d = '+' == b.charAt(c + 1) ? a >>> d : a << d;
-      a = '+' == b.charAt(c) ? (a + d) & 4294967295 : a ^ d;
-    }
-    return a;
-  };
-
-function updateTKK(opts) {
-  opts = opts || {tld: 'com'};
-  return new Promise(function (resolve, reject) {
-    var now = Math.floor(Date.now() / 3600000);
-
-    if (Number(window.TKK.split('.')[0]) === now) {
-      resolve();
-    } else {
-      axios({url: 'https://translate.google.' + opts.tld, method: 'get', responseType: 'text'})
-        .then(function (res) {
-          var matches = res.data.match(/tkk:\s?'(.+?)'/i);
-          var token_ = '';
-          if (matches) {
-            token_ = matches[1];
-            window.TKK = token_;
-          }
-          resolve(token_);
-        })
-        .catch(function (err) {
-          var e = new Error();
-          e.code = 'BAD_NETWORK';
-          e.message = err.message;
-          reject(e);
-        });
-    }
-  });
-}
-
-function tokenGet(text, opts) {
-  return updateTKK(opts)
-    .then(function () {
-      var tk = sM(text);
-      tk = tk.replace('&tk=', '');
-      return {name: 'tk', value: tk};
-    })
-    .catch(function (err) {
-      throw err;
-    });
-}
-
-function translate(text, opts) {
+function translate(text, opts, gotopts) {
   opts = opts || {};
+  gotopts = gotopts || {};
   var e;
   [opts.from, opts.to].forEach(function (lang) {
     if (lang && !languages.isSupported(lang)) {
@@ -123,36 +37,34 @@ function translate(text, opts) {
   opts.from = languages.getCode(opts.from);
   opts.to = languages.getCode(opts.to);
 
-  return tokenGet(text, {tld: opts.tld})
-    .then(function (token) {
-      var url = 'https://translate.google.' + opts.tld + '/translate_a/single';
+  var url = 'https://translate.google.' + opts.tld;
+  return got(url, gotopts)
+    .then(function (res) {
       var data = {
-        client: opts.client || 't',
-        sl: opts.from,
-        tl: opts.to,
-        hl: opts.to,
-        dt: ['at', 'bd', 'ex', 'ld', 'md', 'qca', 'rw', 'rm', 'ss', 't'],
-        ie: 'UTF-8',
-        oe: 'UTF-8',
-        otf: 1,
-        ssel: 0,
-        tsel: 0,
-        kc: 7,
-        q: text,
+        rpcids: 'MkEWBc',
+        'f.sid': extract('FdrFJe', res),
+        bl: extract('cfb2h', res),
+        hl: 'en-US',
+        'soc-app': 1,
+        'soc-platform': 1,
+        'soc-device': 1,
+        _reqid: Math.floor(1000 + Math.random() * 9000),
+        rt: 'c',
       };
-      data[token.name] = token.value;
 
-      return url + '?' + querystring.stringify(data);
+      return data;
     })
-    .then(function (url) {
-      const opstionsAxios = {
-        method: 'get',
-        url: url,
-        responseType: 'text',
-      };
+    .then(function (data) {
+      url = url + '/_/TranslateWebserverUi/data/batchexecute?' + querystring.stringify(data);
+      gotopts.body = 'f.req=' + encodeURIComponent(JSON.stringify([[['MkEWBc', JSON.stringify([[text, opts.from, opts.to, true], [null]]), null, 'generic']]])) + '&';
+      gotopts.headers['content-type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 
-      return axios(opstionsAxios)
+      return got
+        .post(url, gotopts)
         .then(function (res) {
+          var json = res.body.slice(6);
+          var length = '';
+
           var result = {
             text: '',
             pronunciation: '',
@@ -170,35 +82,51 @@ function translate(text, opts) {
             raw: '',
           };
 
-          if (opts.raw) {
-            result.raw = res.data;
+          try {
+            length = /^\d+/.exec(json)[0];
+            json = JSON.parse(json.slice(length.length, parseInt(length, 10) + length.length));
+            json = JSON.parse(json[0][2]);
+            result.raw = json;
+          } catch (e) {
+            return result;
           }
-          var body = res.data;
-          body[0].forEach(function (obj) {
-            if (obj[0]) {
-              result.text += obj[0];
-            }
-            if (obj[2]) {
-              result.pronunciation += obj[2];
-            }
-          });
 
-          if (body[2] === body[8][0][0]) {
-            result.from.language.iso = body[2];
+          if (json[1][0][0][5] === undefined || json[1][0][0][5] === null) {
+            // translation not found, could be a hyperlink or gender-specific translation?
+            result.text = json[1][0][0][0];
           } else {
+            result.text = json[1][0][0][5]
+              .map(function (obj) {
+                return obj[0];
+              })
+              .filter(Boolean)
+              // Google api seems to split text per sentences by <dot><space>
+              // So we join text back with spaces.
+              // See: https://github.com/vitalets/google-translate-api/issues/73
+              .join(' ');
+          }
+          result.pronunciation = json[1][0][0][1];
+
+          // From language
+          if (json[0] && json[0][1] && json[0][1][1]) {
             result.from.language.didYouMean = true;
-            result.from.language.iso = body[8][0][0];
+            result.from.language.iso = json[0][1][1][0];
+          } else if (json[1][3] === 'auto') {
+            result.from.language.iso = json[2];
+          } else {
+            result.from.language.iso = json[1][3];
           }
 
-          if (body[7] && body[7][0]) {
-            var str = body[7][0];
+          // Did you mean & autocorrect
+          if (json[0] && json[0][1] && json[0][1][0]) {
+            var str = json[0][1][0][0][1];
 
-            str = str.replace(/<b><i>/g, '[');
-            str = str.replace(/<\/i><\/b>/g, ']');
+            str = str.replace(/<b>(<i>)?/g, '[');
+            str = str.replace(/(<\/i>)?<\/b>/g, ']');
 
             result.from.text.value = str;
 
-            if (body[7][5] === true) {
+            if (json[0][1][0][2] === 1) {
               result.from.text.autoCorrected = true;
             } else {
               result.from.text.didYouMean = true;
@@ -208,22 +136,16 @@ function translate(text, opts) {
           return result;
         })
         .catch(function (err) {
+          err.message += `\nUrl: ${url}`;
+          if (err.statusCode !== undefined && err.statusCode !== 200) {
+            err.code = 'BAD_REQUEST';
+          } else {
+            err.code = 'BAD_NETWORK';
+          }
           throw err;
         });
     });
 }
 
-async function getTranslate(text) {
-  return new Promise((resolve, reject) => {
-    translate(text, {to: 'en'})
-      .then((res) => {
-        resolve(res);
-      })
-      .catch((err) => {
-        console.error(err);
-        reject(null);
-      });
-  });
-}
-
-module.exports = getTranslate;
+module.exports = translate;
+module.exports.languages = languages;
