@@ -10,16 +10,8 @@ async function apiKeyvision() {
   const response = await axios(opstionsAxios);
   let key;
   try {
-    const apiKeys = String(response.data).split('{api_key:{');
-    apiKeys.forEach((elmKey) => {
-      try {
-        let splitKey = '{' + elmKey.split('"},')[0];
-        splitKey = splitKey.split(':"')[1];
-        if (splitKey && splitKey.length > 20 && !key) {
-          key = splitKey;
-        }
-      } catch (error) {}
-    });
+    const apiKeys = String(response.data).split('={api_key:{');
+    return apiKeys[1].split('"},')[0].split(':"')[1];
   } catch (error) {
     console.error(error);
   }
@@ -31,6 +23,7 @@ let keyVision;
 
 async function getInfoImageByVision(imageB64) {
   if (!keyVision) keyVision = await apiKeyvision();
+
   const opstionsAxios = {
     method: 'post',
     url: `https://content-vision.googleapis.com/v1/images:annotate?alt=json&key=${keyVision}`,

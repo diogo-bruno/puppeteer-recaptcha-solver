@@ -7,7 +7,7 @@ const utils = require('../utils');
 const mkdir = promisify(fs.mkdir);
 
 const getInfoImageByVision = require('../google-api/vision');
-const getTranslate = require('../google-api/translate');
+const translate = require('../google-api/translate');
 
 const config = require('../../config.json');
 
@@ -172,7 +172,7 @@ async function getTypeImages(page) {
     return '';
   });
   if (!text) text = '';
-  const textTranslate = await getTranslate(text);
+  const textTranslate = await translate(text, {to: 'en'});
   if (textTranslate && textTranslate.text) return textTranslate.text.toLowerCase();
   return text.toLowerCase();
 }

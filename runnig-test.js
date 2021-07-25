@@ -31,8 +31,10 @@ const axiosInstance = axios.create({
 
 axiosInstance
   .post('http://localhost:3030/resolveRecaptcha', {
-    urlRecaptcha: 'https://www.google.com/recaptcha/api2/demo',
-    waitSelectorSucces: '',
+    // urlRecaptcha: 'https://www.google.com/recaptcha/api2/demo',
+    // waitSelectorSucces: '',
+    urlRecaptcha: 'https://portalbnmp.cnj.jus.br/',
+    waitSelectorSucces: '[label="Pesquisar"]',
   })
   .then((res) => {
     console.log(res.data);
