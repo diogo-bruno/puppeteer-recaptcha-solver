@@ -1,7 +1,7 @@
 const axios = require('../axios');
 const utils = require('../utils');
 
-async function apiKeyvision() {
+async function apiKeyVision() {
   const opstionsAxios = {
     method: 'get',
     url: 'https://explorer.apis.google.com/embedded.js',
@@ -15,14 +15,14 @@ async function apiKeyvision() {
   } catch (error) {
     console.error(error);
   }
-  if (!key) key = 'AIzaSyAa8yy0GdcGPHdtD083HiGGx_S0vMPScDM';
+  if (!key) return 'AIzaSyAa8yy0GdcGPHdtD083HiGGx_S0vMPScDM';
   return key;
 }
 
 let keyVision;
 
 async function getInfoImageByVision(imageB64) {
-  if (!keyVision) keyVision = await apiKeyvision();
+  if (!keyVision) keyVision = await apiKeyVision();
 
   const opstionsAxios = {
     method: 'post',
@@ -47,10 +47,11 @@ async function getInfoImageByVision(imageB64) {
         },
       ],
     },
-    headers: utils.headersVision('application/json', axios.defaults.headers['User-Agent']),
+    headers: utils.headersVision('application/json', utils.getUserAgent()),
   };
 
   return axios(opstionsAxios);
 }
 
 module.exports = getInfoImageByVision;
+module.exports.apiKeyVision = apiKeyVision;

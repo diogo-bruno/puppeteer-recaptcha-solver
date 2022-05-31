@@ -77,11 +77,6 @@ async function classifyImages(path, indexImg) {
         if (key.startsWith(text.toLowerCase()) && key.endsWith(text.toLowerCase())) contain = true;
       });
     }
-    // if (keys && keys.length) {
-    //   keys.forEach((key) => {
-    //     if (text.toLowerCase().match(new RegExp(key, 'i'))) contain = true;
-    //   });
-    // }
     return contain;
   };
 
@@ -90,8 +85,7 @@ async function classifyImages(path, indexImg) {
     objetContent.forEach((item) => {
       if (item.index === index && item.select) contain = true;
     });
-    if (contain) return false;
-    return true;
+    return !contain;
   };
 
   const readJsonVision = async (pathJson, index) => {
@@ -155,7 +149,7 @@ async function classifyImages(path, indexImg) {
 }
 
 async function getImagePayload(page) {
-  return await page.evaluate(() => {
+  return page.evaluate(() => {
     const iframe = document.querySelector('iframe[src*="api2/bframe"]');
     if (!iframe) return false;
     if (iframe.contentWindow.document.querySelector('.rc-image-tile-target img')) return iframe.contentWindow.document.querySelector('.rc-image-tile-target img').src;
@@ -215,11 +209,6 @@ async function getInfosRecaptcha(page, reload) {
 
   if (lengthImages > 9) optionSelectMultiplesImages = false;
 
-  // console.log('imgPayload -> ', imgPayload);
-  // console.log('typeImages -> ', typeImages);
-  // console.log('lengthImages -> ', lengthImages);
-  // console.log('optionSelectMultiplesImages -> ', optionSelectMultiplesImages);
-
   return true;
 }
 
@@ -234,7 +223,7 @@ async function resolveImageObject(pathImage) {
 
 async function verifyNewsImagesContainsObject(path, page) {
   if (optionSelectMultiplesImages) {
-    const urlsNewImage = await page.evaluate((lastUrlsNewsImages) => {
+    const urlsNewImage = await page.evaluate((lastUrlsNewsImages_) => {
       const iframe = document.querySelector('iframe[src*="api2/bframe"]');
       if (!iframe) return false;
 
@@ -242,9 +231,9 @@ async function verifyNewsImagesContainsObject(path, page) {
       const newsUrls = [];
 
       docIframe.querySelectorAll('.rc-imageselect-target td').forEach((elm, index) => {
-        if (elm.querySelector('img').width < 150) {
+        if (elm.querySelector('img') && elm.querySelector('img').width < 150) {
           const imgUrl = elm.querySelector('img').src;
-          if (!lastUrlsNewsImages.includes(imgUrl)) {
+          if (!lastUrlsNewsImages_.includes(imgUrl)) {
             newsUrls.push({
               url: imgUrl,
               index: index,
@@ -261,7 +250,7 @@ async function verifyNewsImagesContainsObject(path, page) {
     await mkdir(newPath);
 
     if (urlsNewImage && urlsNewImage.length) {
-      for (obj of urlsNewImage) {
+      for (let obj of urlsNewImage) {
         const pathImgPayload = `${newPath}/new-payload-${obj.index}.jpg`;
 
         await download.image({
@@ -291,7 +280,7 @@ async function verifyNewsImagesContainsObject(path, page) {
 
 async function selectImagesContainsObject(imagesSelect, page) {
   if (imagesSelect && imagesSelect.length) {
-    const promises = imagesSelect.map(async (elm, idx) => {
+    const promises = imagesSelect.map(async (elm) => {
       if (elm && elm.contem && elm.select && elm.index !== undefined) {
         await page.evaluate(async (itemElm) => {
           function rdn(min, max) {
@@ -303,9 +292,6 @@ async function selectImagesContainsObject(imagesSelect, page) {
 
         if (optionSelectMultiplesImages) {
           await page.evaluate(async (itemElm) => {
-            function rdn(min, max) {
-              return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
-            }
             const iframe = document.querySelector('iframe[src*="api2/bframe"]');
             return iframe.contentWindow.document.querySelectorAll('.rc-imageselect-target td')[itemElm.index].querySelector('img').remove();
           }, elm);
@@ -378,8 +364,8 @@ async function selectImagesObject(page) {
 }
 
 async function verifyErrosSelect(page) {
-  const errorSelect = await page.evaluate(
-    (optionSelectMultiplesImages, utils) => {
+  return page.evaluate(
+    (optionSelectMultiplesImages_, utils_) => {
       function isVisible(elem) {
         if (elem) return elem.offsetWidth > 0 || elem.offsetHeight > 0 || elem.getClientRects().length > 0;
         return false;
@@ -403,7 +389,8 @@ async function verifyErrosSelect(page) {
         if (iframe.contentWindow.document.querySelector('.rc-imageselect-error-select-something').innerText) error = true;
       }
 
-      if (!optionSelectMultiplesImages && !document.querySelectorAll('.rc-imageselect-tileselected').length && !document.querySelector('.recaptcha-checkbox-checked')) error = true;
+      if (!optionSelectMultiplesImages_ && !document.querySelectorAll('.rc-imageselect-tileselected').length && !document.querySelector('.recaptcha-checkbox-checked'))
+        error = true;
 
       if (error) {
         if (iframe.contentWindow.document.querySelector('.recaptcha-checkbox-checkmark')) {
@@ -415,7 +402,7 @@ async function verifyErrosSelect(page) {
         if (
           iframe.contentWindow.document.querySelector('#recaptcha-token') &&
           iframe.contentWindow.document.querySelector('#recaptcha-token').value &&
-          iframe.contentWindow.document.querySelector('#recaptcha-token').value.length < utils.recaptchaTokenMinLength
+          iframe.contentWindow.document.querySelector('#recaptcha-token').value.length < utils_.recaptchaTokenMinLength
         ) {
           error = false;
         }
@@ -426,8 +413,6 @@ async function verifyErrosSelect(page) {
     optionSelectMultiplesImages,
     utils
   );
-
-  return errorSelect;
 }
 
 async function buttonVerifyImages(page) {
@@ -451,7 +436,7 @@ async function solverByImage(page, attemptsImages) {
 
     if (valueRecaptcha) return true;
 
-    console.info(`-------------------------INITIATE-${new Date().toLocaleTimeString()}-------------------------`);
+    console.info(`-------------------------INITIATE | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
 
     console.info('Init process recognition of images');
 
@@ -529,7 +514,7 @@ async function solverByImage(page, attemptsImages) {
 
     console.info(`Resolution with error = ${errorSelect}`);
 
-    console.info(`-------------------------FINISHING-${new Date().toLocaleTimeString()}-------------------------`);
+    console.info(`-------------------------FINISHING | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
 
     lastImgPayload = imgPayload;
 

@@ -15,13 +15,13 @@ async function getDataPage(page, waitSelectorSucces) {
   } catch (error) {}
 
   try {
-    dataPage = await page.evaluate((utils) => {
+    dataPage = await page.evaluate((utils_) => {
       const data = {};
       const iframe = document.querySelector('iframe[src*="api2/bframe"]');
       const docIframe = iframe.contentWindow.document;
       data.recaptchaToken = '';
       if (docIframe.querySelector('#recaptcha-token')) {
-        if (docIframe.querySelector('#recaptcha-token').value && docIframe.querySelector('#recaptcha-token').value.length < utils.recaptchaTokenMinLength)
+        if (docIframe.querySelector('#recaptcha-token').value && docIframe.querySelector('#recaptcha-token').value.length < utils_.recaptchaTokenMinLength)
           data.recaptchaToken = docIframe.querySelector('#recaptcha-token').value;
       }
       data.cookie = document.cookie;
@@ -82,9 +82,7 @@ async function solverRecaptcha(page, waitSelectorSucces) {
 
     if (valueRecaptcha) {
       resultaDataPage = await getDataPage(page, waitSelectorSucces);
-      return new Promise(function (resolve, reject) {
-        resolve(resultaDataPage);
-      });
+      return Promise.resolve(resultaDataPage);
     }
 
     await page.waitForFunction(() => {
