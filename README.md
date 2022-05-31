@@ -22,8 +22,6 @@ npm install
 npm start
 ```
 
-- OR
-
 ```
 docker-compose up
 ```
