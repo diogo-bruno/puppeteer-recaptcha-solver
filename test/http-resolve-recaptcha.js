@@ -23,7 +23,7 @@ async function callService() {
       waitSelectorSucces: '[class="recaptcha-success"]',
     })
     .then((res) => {
-      console.log(`\n${JSON.stringify(res.data, null, 2)}`);
+      console.log(res.data);
     })
     .catch((error) => {
       console.error(error);
