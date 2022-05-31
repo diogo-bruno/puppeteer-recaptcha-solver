@@ -23,7 +23,8 @@
     "start": "node src/index.js",
     "test-http-resolve-recaptcha": "node ./test/http-resolve-recaptcha.js",
     "test": "mocha ./test/*.test.js",
-    "test-file": "mocha "
+    "test-file": "mocha ",
+    "format": "npx prettier --write ."
   },
   "devDependencies": {
     "mocha": "^10.0.0",
