@@ -1,6 +1,6 @@
-# Node Puppeteer Recaptcha Solver
+# Node Recaptcha Solver
 
-## A robot for `I'm not a robot`
+## 🤖 robot for `I'm not a robot`
 
 <br />
 
