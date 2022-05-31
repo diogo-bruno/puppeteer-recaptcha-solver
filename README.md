@@ -15,11 +15,16 @@
 ```
 git clone https://github.com/diogo-bruno/puppeteer-recaptcha-solver.git
 cd puppeteer-recaptcha-solver
+```
 
--------------------
+```
 npm install
 npm start
--------- OR -------
+```
+
+- OR
+
+```
 docker-compose up
 ```
 
