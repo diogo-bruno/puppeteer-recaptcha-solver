@@ -1,4 +1,5 @@
 const axios = require('../axios');
+const utils = require('../utils');
 
 async function getTextAudio(audioBytes) {
   const opstionsAxios = {
@@ -11,7 +12,14 @@ async function getTextAudio(audioBytes) {
     },
   };
   const response = await axios(opstionsAxios);
-  if (response.data && response.data.text) return response.data.text.trim();
+  if (response.data && response.data.text) {
+    return utils.trimText(response.data.text);
+  } else {
+    try {
+      const data = JSON.parse(`{"entities"` + response.data.split(`"entities"`)[1]);
+      return utils.trimText(data.text);
+    } catch (error) {}
+  }
   return '';
 }
 

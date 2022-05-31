@@ -14,13 +14,9 @@ async function webHookResponseRecaptcha(options, dataPage) {
   } else {
     response.status = 200;
   }
-
   console.info(`Response Page: ${JSON.stringify(dataPage)}`);
   console.info(`CALL Page: ${options.urlWebHook}`);
-
-  if (response.status != 200) return false;
-
-  return true;
+  return response.status === 200;
 }
 
 module.exports = webHookResponseRecaptcha;

@@ -78,7 +78,7 @@ utils.args = [
 utils.randomHashString = function (length) {
   if (!length) length = 10;
   const chars = [...'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'];
-  return [...Array(length)].map((i) => chars[(Math.random() * chars.length) | 0]).join``;
+  return [...Array(length)].map(() => chars[(Math.random() * chars.length) | 0]).join``;
 };
 
 utils.headersVision = function (contentType, userAgent) {
@@ -97,11 +97,10 @@ utils.headersDefault = function (contentType, urlOrigin) {
   try {
     origin = new URL(urlOrigin).origin;
   } catch (error) {}
-  const headers = {
+  return {
     Origin: origin,
     'Content-Type': contentType,
   };
-  return headers;
 };
 
 utils.sleep = function (ms) {
@@ -140,21 +139,20 @@ utils.delay = function delay(time) {
 utils.recaptchaTokenMinLength = 2000;
 
 utils.isValueRecaptcha = async function (page) {
-  const valid = await page.evaluate((utils) => {
+  return page.evaluate((utils_) => {
     const iframe = document.querySelector('iframe[src*="api2/bframe"]');
     if (iframe) {
       const docIframe = iframe.contentWindow.document;
       if (docIframe.querySelector('#recaptcha-token')) {
-        if (docIframe.querySelector('#recaptcha-token').value && docIframe.querySelector('#recaptcha-token').value.length < utils.recaptchaTokenMinLength) return true;
+        if (docIframe.querySelector('#recaptcha-token').value && docIframe.querySelector('#recaptcha-token').value.length < utils_.recaptchaTokenMinLength) return true;
       }
     }
     return false;
   }, utils);
-  return valid;
 };
 
 utils.resolutionRecaptchaDisabled = async function (page) {
-  return await page.evaluate(() => {
+  return page.evaluate(() => {
     const iframe = document.querySelector('iframe[src*="api2/bframe"]');
     if (!iframe) return false;
     return iframe.contentWindow.document.querySelector('[href="https://developers.google.com/recaptcha/docs/faq#my-computer-or-network-may-be-sending-automated-queries"]');
@@ -191,15 +189,15 @@ var Base64Binary = {
     var uarray;
     var chr1, chr2, chr3;
     var enc1, enc2, enc3, enc4;
-    var i = 0;
-    var j = 0;
+
+    let j = 0;
 
     if (arrayBuffer) uarray = new Uint8Array(arrayBuffer);
     else uarray = new Uint8Array(bytes);
 
     input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
 
-    for (i = 0; i < bytes; i += 3) {
+    for (let i = 0; i < bytes; i += 3) {
       //get the 3 octects in 4 ascii chars
       enc1 = this._keyStr.indexOf(input.charAt(j++));
       enc2 = this._keyStr.indexOf(input.charAt(j++));
@@ -220,5 +218,16 @@ var Base64Binary = {
 };
 
 utils.Base64Binary = Base64Binary;
+
+utils.getByteArray = (filePath) => {
+  let fileData = fs.readFileSync(filePath).toString('hex');
+  let result = [];
+  for (var i = 0; i < fileData.length; i += 2) result.push('0x' + fileData[i] + '' + fileData[i + 1]);
+  return result;
+};
+
+utils.trimText = (text) => {
+  return text.trim();
+};
 
 module.exports = utils;

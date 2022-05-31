@@ -3,27 +3,35 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.21.1",
-    "console-stamp": "^3.0.2",
-    "express": "^4.17.1",
-    "got": "^9.6.0",
-    "https-proxy-agent": "^5.0.0",
-    "image-downloader": "^4.0.2",
-    "image-size": "^1.0.0",
-    "ip": "^1.1.5",
+    "axios": "^0.27.2",
+    "console-stamp": "^3.0.6",
+    "express": "^4.18.1",
+    "got": "9.6.0",
+    "https-proxy-agent": "^5.0.1",
+    "image-downloader": "^4.3.0",
+    "image-size": "^1.0.1",
+    "ip": "^1.1.8",
     "jimp": "^0.16.1",
     "node-uuid": "^1.4.8",
-    "ora": "^5.4.0",
-    "puppeteer": "^9.1.1",
-    "puppeteer-extra": "^3.1.18",
-    "puppeteer-extra-plugin-stealth": "^2.7.8"
+    "ora": "5.4.1",
+    "puppeteer": "^14.1.2",
+    "puppeteer-extra": "^3.2.3",
+    "puppeteer-extra-plugin-stealth": "^2.9.0"
   },
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "test": "node ./runnig-test.js"
+    "test-http-resolve-recaptcha": "node ./test/http-resolve-recaptcha.js",
+    "test": "mocha ./test/*.test.js",
+    "test-file": "mocha ",
+    "format": "npx prettier --write ."
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "mocha": "^10.0.0",
+    "nodemon": "^2.0.16"
+  },
+  "engines": {
+    "npm": ">=7.0.0",
+    "node": ">=16.0.0"
   }
 }

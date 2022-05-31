@@ -8,12 +8,8 @@ const getPageData = async (url, waitSelectorSucces, headless) => {
   const page = (await browser.pages())[0];
   const dataPage = await solverRecaptcha(page, waitSelectorSucces);
   await utils.delay(5000);
-  if (config.closePageFinal) {
-    await page.close();
-  }
-  if (config.closeBrowserFinal) {
-    await browser.close();
-  }
+  if (config.closePageFinal) await page.close();
+  if (config.closeBrowserFinal) await browser.close();
   return dataPage;
 };
 

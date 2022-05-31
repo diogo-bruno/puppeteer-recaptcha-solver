@@ -25,9 +25,7 @@ function translate(text, opts, gotopts) {
     }
   });
   if (e) {
-    return new Promise(function (resolve, reject) {
-      reject(e);
-    });
+    return Promise.reject(e);
   }
 
   opts.from = opts.from || 'auto';
@@ -40,7 +38,7 @@ function translate(text, opts, gotopts) {
   var url = 'https://translate.google.' + opts.tld;
   return got(url, gotopts)
     .then(function (res) {
-      var data = {
+      return {
         rpcids: 'MkEWBc',
         'f.sid': extract('FdrFJe', res),
         bl: extract('cfb2h', res),
@@ -51,8 +49,6 @@ function translate(text, opts, gotopts) {
         _reqid: Math.floor(1000 + Math.random() * 9000),
         rt: 'c',
       };
-
-      return data;
     })
     .then(function (data) {
       url = url + '/_/TranslateWebserverUi/data/batchexecute?' + querystring.stringify(data);
@@ -87,7 +83,8 @@ function translate(text, opts, gotopts) {
             json = JSON.parse(json.slice(length.length, parseInt(length, 10) + length.length));
             json = JSON.parse(json[0][2]);
             result.raw = json;
-          } catch (e) {
+          } catch (error) {
+            console.error(error);
             return result;
           }
 

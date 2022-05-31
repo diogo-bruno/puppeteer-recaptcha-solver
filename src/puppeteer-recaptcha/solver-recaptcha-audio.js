@@ -34,9 +34,9 @@ async function solverByAudio(page) {
       return iframe.contentWindow.document.querySelector('#audio-source').src;
     });
 
-    const audioBytes = await page.evaluate((audioLink) => {
+    const audioBytes = await page.evaluate((audioLink_) => {
       return (async () => {
-        const response = await window.fetch(audioLink);
+        const response = await window.fetch(audioLink_);
         const buffer = await response.arrayBuffer();
         return Array.from(new Uint8Array(buffer));
       })();

@@ -13,7 +13,7 @@ app.use(bodyParser.raw());
 const port = 3030;
 
 const resolveRecaptcha = async (opt) => {
-  const headless = false;
+  const headless = process.env.HEADLESS === 'true' || false;
   const dataPage = await getPageDataRecaptcha(opt.urlRecaptcha, opt.waitSelectorSucces, headless);
   webHookResponseRecaptcha(opt, dataPage);
 };
