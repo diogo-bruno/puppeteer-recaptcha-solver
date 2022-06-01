@@ -8,7 +8,9 @@
 
 <br />
 
-![20201020_000634](https://user-images.githubusercontent.com/11491923/96535617-945db500-1268-11eb-988f-66a1fb35aa13.gif)
+<img src="https://user-images.githubusercontent.com/11491923/96535617-945db500-1268-11eb-988f-66a1fb35aa13.gif" width="400">
+
+<br />
 
 # Running
 
