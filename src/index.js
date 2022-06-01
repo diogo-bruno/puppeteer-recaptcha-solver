@@ -26,7 +26,7 @@ app.post('/resolveRecaptcha', (req, res) => {
   res.send(opts);
 });
 
-app.listen(port, () => console.log(`Puppeteer Recaptcha Solver running in port ${port}`));
+app.listen(port, () => console.log(`Puppeteer Recaptcha Solver running in port ${port}\n\n`));
 
 process.on('SIGINT', () => {
   console.log('bye, end process');

@@ -29,6 +29,8 @@ const minScore = config.minScore;
 
 let resolveOnlyImages = config.resolveOnlyImages;
 
+let timeoutReloadImagesCaptcha = null;
+
 function resetVariables() {
   imgPayload = '';
   typeImages = '';
@@ -171,18 +173,40 @@ async function getTypeImages(page) {
   return text.toLowerCase();
 }
 
+async function reloadImagesCaptcha(page) {
+  try {
+    await page.evaluate(() => {
+      function rdn(min, max) {
+        return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
+      }
+      const iframe = document.querySelector('iframe[src*="api2/bframe"]');
+      if (!iframe) return false;
+      return iframe.contentWindow.document.querySelector('#recaptcha-reload-button').click({delay: rdn(40, 100)});
+    });
+    await page.waitForTimeout(1000);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function existLabelError(page) {
+  return page.evaluate(() => {
+    const iframe = document.querySelector('iframe[src*="api2/bframe"]');
+    if (!iframe) return true;
+    return (
+      iframe.contentWindow.document.querySelector('.rc-imageselect-error-select-more')?.style.display !== 'none' ||
+      iframe.contentWindow.document.querySelector('.rc-imageselect-error-dynamic-more')?.style.display !== 'none' ||
+      iframe.contentWindow.document.querySelector('.rc-imageselect-error-select-something')?.style.display !== 'none'
+    );
+  });
+}
+
 async function getInfosRecaptcha(page, reload) {
+  const labelErrorRecaptcha = await utils.existErrorRecaptcha(page);
+
   if (!checkImageCorrect()) {
-    if (reload) {
-      await page.evaluate(() => {
-        function rdn(min, max) {
-          return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
-        }
-        const iframe = document.querySelector('iframe[src*="api2/bframe"]');
-        if (!iframe) return false;
-        return iframe.contentWindow.document.querySelector('#recaptcha-reload-button').click({delay: rdn(40, 100)});
-      });
-      await page.waitForTimeout(500);
+    if (reload || labelErrorRecaptcha) {
+      await reloadImagesCaptcha(page);
     }
 
     imgPayload = await getImagePayload(page);
@@ -280,7 +304,7 @@ async function verifyNewsImagesContainsObject(path, page) {
 
 async function selectImagesContainsObject(imagesSelect, page) {
   if (imagesSelect && imagesSelect.length) {
-    const promises = imagesSelect.map(async (elm) => {
+    for (const elm of imagesSelect) {
       if (elm && elm.contem && elm.select && elm.index !== undefined) {
         await page.evaluate(async (itemElm) => {
           function rdn(min, max) {
@@ -310,8 +334,7 @@ async function selectImagesContainsObject(imagesSelect, page) {
           } catch (error) {}
         }
       }
-    });
-    await Promise.all(promises);
+    }
   }
 }
 
@@ -436,7 +459,7 @@ async function solverByImage(page, attemptsImages) {
 
     if (valueRecaptcha) return true;
 
-    console.info(`-------------------------INITIATE | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
+    console.info(`-------------------------${attemptsImages + 1}ª INITIATE | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
 
     console.info('Init process recognition of images');
 
@@ -450,7 +473,7 @@ async function solverByImage(page, attemptsImages) {
 
     await getInfosRecaptcha(page, reloadRecaptcha);
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(200);
 
     const resolutionDisable = await utils.resolutionRecaptchaDisabled(page);
 
@@ -492,13 +515,19 @@ async function solverByImage(page, attemptsImages) {
 
     await utils.saveScreenshot(page, `pos-select`);
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(200);
 
     console.info(`Checking selection of other images ${typeImages}`);
 
+    clearTimeout(timeoutReloadImagesCaptcha);
+
+    timeoutReloadImagesCaptcha = setTimeout(async () => {
+      await reloadImagesCaptcha(page);
+    }, 1000 * 60);
+
     await (async () => {
       while (await verifyNewsImagesContainsObject(path, page)) {
-        await utils.delay(500);
+        await utils.delay(1000);
       }
     })();
 
@@ -508,15 +537,17 @@ async function solverByImage(page, attemptsImages) {
 
     await buttonVerifyImages(page);
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     const errorSelect = await verifyErrosSelect(page);
 
     console.info(`Resolution with error = ${errorSelect}`);
 
-    console.info(`-------------------------FINISHING | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
+    console.info(`-------------------------${attemptsImages + 1}ª FINISHING | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
 
     lastImgPayload = imgPayload;
+
+    clearTimeout(timeoutReloadImagesCaptcha);
 
     if (errorSelect) {
       resetVariables();
@@ -525,7 +556,11 @@ async function solverByImage(page, attemptsImages) {
 
     return true;
   } catch (error) {
-    console.error(error);
+    if (error && error.message) {
+      console.error(error.message);
+    } else {
+      console.error(error);
+    }
     return false;
   }
 }

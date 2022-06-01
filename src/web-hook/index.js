@@ -4,13 +4,30 @@ const utils = require('../utils');
 async function webHookResponseRecaptcha(options, dataPage) {
   let response = {};
   if (options.urlWebHook) {
+    if (!dataPage || dataPage === {}) {
+      dataPage = {
+        url: options.url,
+        status: 'error',
+        error: 'No dataPage',
+      };
+    } else {
+      dataPage.status = 'success';
+    }
+
+    dataPage.task = options.task;
+    dataPage.startedExecution = options.start;
+
     const opstionsAxios = {
       method: 'post',
       url: options.urlWebHook,
       data: dataPage,
       headers: utils.headersDefault('application/json', options.urlWebHook),
     };
-    response = await axios(opstionsAxios);
+    try {
+      response = await axios(opstionsAxios);
+    } catch (error) {
+      console.error(error);
+    }
   } else {
     response.status = 200;
   }

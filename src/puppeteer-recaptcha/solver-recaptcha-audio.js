@@ -1,4 +1,4 @@
-const getTextAudio = require('../wit.ai-api/speech');
+const getTextAudio = require('../witai-api/speech');
 const utils = require('../utils');
 
 async function solverByAudio(page) {
@@ -7,7 +7,18 @@ async function solverByAudio(page) {
     const bframe = frames.find((frame) => frame.url().includes('api2/bframe'));
 
     const audioButton = await bframe.$('#recaptcha-audio-button');
-    await audioButton.click({delay: utils.rdn(30, 600)});
+
+    if (!audioButton || audioButton.length === 0) {
+      console.error('AudioButton not found');
+      return false;
+    }
+
+    try {
+      await audioButton.click({delay: utils.rdn(30, 600)});
+    } catch (error) {
+      console.error('AudioButton not click , error: ', error.message);
+      return false;
+    }
 
     await page.waitForTimeout(1500);
 

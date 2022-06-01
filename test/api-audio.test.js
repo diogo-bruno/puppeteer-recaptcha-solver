@@ -1,5 +1,5 @@
 const {audio} = require('./data-files');
-const getTextAudio = require('../src/wit.ai-api/speech');
+const getTextAudio = require('../src/witai-api/speech');
 const utils = require('../src/utils');
 const assert = require('assert');
 

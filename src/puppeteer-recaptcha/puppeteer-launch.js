@@ -4,7 +4,7 @@ const utils = require('../utils');
 
 async function puppeteerLaunch(pageUrl, headless) {
   puppeteer.use(pluginStealth());
-  console.info('Preparing init puppeteer launch');
+  console.info('Preparing init puppeteer launch\n\n\n');
 
   const optionsLaunch = {
     headless: headless,
@@ -13,6 +13,7 @@ async function puppeteerLaunch(pageUrl, headless) {
     slowMo: 100,
     ignoreDefaultArgs: ['--enable-automation'],
     ignoreHTTPSErrors: true,
+    browerContext: 'default',
   };
 
   if (process.env.CHROME_PATH) {
@@ -25,9 +26,21 @@ async function puppeteerLaunch(pageUrl, headless) {
   await page.setDefaultNavigationTimeout(0);
   await page.setDefaultTimeout(0);
   await page.setCacheEnabled(false);
+  const session = await page.target().createCDPSession();
+  await session.send('Page.enable');
+  await session.send('Page.setWebLifecycleState', {state: 'active'});
+  await page.bringToFront();
   page.on('dialog', async (dialog) => {
     await dialog.dismiss();
   });
+
+  const headlessUserAgent = await page.evaluate(() => navigator.userAgent);
+  const chromeUserAgent = headlessUserAgent.replace('HeadlessChrome', 'Chrome');
+  await page.setUserAgent(chromeUserAgent);
+  await page.setExtraHTTPHeaders({
+    'accept-language': 'en-US,en;q=0.8',
+  });
+
   await page.goto(pageUrl, {waitUntil: 'load', timeout: 0});
   await pageOne.close();
   console.info(`Open page ${pageUrl}`);

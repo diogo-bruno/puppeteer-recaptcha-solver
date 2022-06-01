@@ -50,7 +50,7 @@ async function solverRecaptcha(page, waitSelectorSucces) {
       return resultaDataPage;
     }
 
-    console.info('Awaiting response from the page');
+    console.info('Awaiting response from the page\n\n\n');
 
     await page.waitForFunction(
       () => {
@@ -63,13 +63,9 @@ async function solverRecaptcha(page, waitSelectorSucces) {
       }
     );
 
-    let frames = await page.frames();
-    const recaptchaFrame = frames.find((frame) => frame.url().includes('api2/anchor'));
+    await utils.clickCheckBoxRecaptcha(page);
 
-    const checkbox = await recaptchaFrame.$('.recaptcha-checkbox-border');
-    await checkbox.click({delay: utils.rdn(30, 500)});
-
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     const resolutionDisable = await utils.resolutionRecaptchaDisabled(page);
 
@@ -101,6 +97,7 @@ async function solverRecaptcha(page, waitSelectorSucces) {
       await (async () => {
         while (resolved === 'reload-images') {
           resolved = await solverByImage(page, attemptsImages);
+
           if (attemptsImages === maxAttemptsImages) {
             console.info(`More than ${maxAttemptsImages} attempts!`);
             resolved = false;
