@@ -1,0 +1,8 @@
+.git
+.cache
+*.md
+node_modules/*
+test/*
+screenshots/*
+tmp/*
+.github
