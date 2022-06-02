@@ -1,6 +1,6 @@
 # Node Recaptcha Solver
 
-## 🤖 robot for `I'm not a robot`
+## 🤖 Robot for `I'm not a robot`
 
 <br />
 
@@ -14,21 +14,22 @@
 
 # Running
 
-```
+```bash
 git clone https://github.com/diogo-bruno/puppeteer-recaptcha-solver.git
 cd puppeteer-recaptcha-solver
 ```
 
-```
+```bash
 npm install
 npm start
--or-
+# -or-
 docker-compose up
 ```
 
 # Test
 
-```
+```bash
+npm install
 npm run test-http-resolve-recaptcha
 ```
 
