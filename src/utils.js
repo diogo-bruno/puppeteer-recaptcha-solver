@@ -362,8 +362,11 @@ utils.clickCheckBoxRecaptcha = async (page) => {
   try {
     let frames = await page.frames();
     const recaptchaFrame = frames.find((frame) => frame.url().includes('api2/anchor'));
-    const checkbox = await recaptchaFrame.$('.recaptcha-checkbox-border');
-    if (checkbox) await checkbox.click({delay: utils.rdn(30, 500)});
+    if (recaptchaFrame) {
+      const checkbox = await recaptchaFrame.$('.recaptcha-checkbox-border');
+      if (checkbox) await checkbox.click({delay: utils.rdn(30, 500)});
+    }
+    await page.waitForTimeout(500);
   } catch (error) {
     console.error(error);
   }

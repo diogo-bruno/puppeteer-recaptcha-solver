@@ -73,6 +73,8 @@ async function solverByAudio(page) {
       documentFrame.querySelector('#recaptcha-verify-button').click({delay: rdn(40, 200)});
     });
 
+    await page.waitForTimeout(1500);
+
     return true;
   } catch (error) {
     console.error(error);

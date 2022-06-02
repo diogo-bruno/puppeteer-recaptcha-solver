@@ -29,8 +29,6 @@ const minScore = config.minScore;
 
 let resolveOnlyImages = config.resolveOnlyImages;
 
-let timeoutReloadImagesCaptcha = null;
-
 function resetVariables() {
   imgPayload = '';
   typeImages = '';
@@ -183,7 +181,7 @@ async function reloadImagesCaptcha(page) {
       if (!iframe) return false;
       return iframe.contentWindow.document.querySelector('#recaptcha-reload-button').click({delay: rdn(40, 100)});
     });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
   } catch (error) {
     console.log(error);
   }
@@ -201,23 +199,25 @@ async function existLabelError(page) {
   });
 }
 
-async function getInfosRecaptcha(page, reload) {
-  const labelErrorRecaptcha = await utils.existErrorRecaptcha(page);
+async function getTypeAndSizeBoxSelectImages(page) {
+  typeImages = await getTypeImages(page);
 
+  lengthImages = await page.evaluate(() => {
+    const iframe = document.querySelector('iframe[src*="api2/bframe"]');
+    if (!iframe) return false;
+    return iframe.contentWindow.document.querySelectorAll('#rc-imageselect-target td').length;
+  });
+}
+
+async function getInfosRecaptcha(page, reload) {
   if (!checkImageCorrect()) {
-    if (reload || labelErrorRecaptcha) {
+    if (reload) {
       await reloadImagesCaptcha(page);
     }
 
     imgPayload = await getImagePayload(page);
 
-    typeImages = await getTypeImages(page);
-
-    lengthImages = await page.evaluate(() => {
-      const iframe = document.querySelector('iframe[src*="api2/bframe"]');
-      if (!iframe) return false;
-      return iframe.contentWindow.document.querySelectorAll('#rc-imageselect-target td').length;
-    });
+    await getTypeAndSizeBoxSelectImages(page);
 
     optionSelectMultiplesImages = await page.evaluate(() => {
       const iframe = document.querySelector('iframe[src*="api2/bframe"]');
@@ -232,8 +232,6 @@ async function getInfosRecaptcha(page, reload) {
   }
 
   if (lengthImages > 9) optionSelectMultiplesImages = false;
-
-  return true;
 }
 
 async function resolveImageObject(pathImage) {
@@ -331,7 +329,9 @@ async function selectImagesContainsObject(imagesSelect, page) {
               {timeout: 20000},
               elm.index
             );
-          } catch (error) {}
+          } catch (error) {
+            console.log(error);
+          }
         }
       }
     }
@@ -439,13 +439,13 @@ async function verifyErrosSelect(page) {
 }
 
 async function buttonVerifyImages(page) {
-  await page.evaluate(() => {
+  return page.evaluate(() => {
     const iframe = document.querySelector('iframe[src*="api2/bframe"]');
     if (!iframe) return false;
     function rdn(min, max) {
       return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
     }
-    return iframe.contentWindow.document.querySelector('#recaptcha-verify-button').click({delay: rdn(40, 100)});
+    return iframe.contentWindow.document.querySelector('#recaptcha-verify-button').click({delay: rdn(40, 600)});
   });
 }
 
@@ -455,9 +455,38 @@ async function solverByImage(page, attemptsImages) {
 
     resetVariables();
 
+    await page.waitForTimeout(500);
+
     const valueRecaptcha = await utils.isValueRecaptcha(page);
 
     if (valueRecaptcha) return true;
+
+    const firstImagesResolve = config.firstImagesResolve;
+
+    if (firstImagesResolve.length) {
+      await getTypeAndSizeBoxSelectImages(page);
+
+      if (attemptsImages === 0 && (!firstImagesResolve.includes(typeImages) || lengthImages !== 9)) {
+        await (async () => {
+          while (!firstImagesResolve.includes(typeImages.toLowerCase()) || lengthImages !== 9) {
+            console.log(`Await for type images [${JSON.stringify(firstImagesResolve)}] and lengthImages === 9 : ${typeImages}`);
+            await page.evaluate(() => {
+              const iframe = document.querySelector('iframe[src*="api2/anchor"]');
+              if (!iframe) return false;
+              iframe.contentWindow.location.reload(true);
+            });
+            await page.waitForTimeout(2000);
+            await utils.clickCheckBoxRecaptcha(page);
+            await page.waitForTimeout(1000);
+            await getTypeAndSizeBoxSelectImages(page);
+          }
+        })();
+      }
+
+      resetVariables();
+    }
+
+    await page.waitForTimeout(500);
 
     console.info(`-------------------------${attemptsImages + 1}ª INITIATE | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
 
@@ -473,7 +502,7 @@ async function solverByImage(page, attemptsImages) {
 
     await getInfosRecaptcha(page, reloadRecaptcha);
 
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(500);
 
     const resolutionDisable = await utils.resolutionRecaptchaDisabled(page);
 
@@ -519,15 +548,9 @@ async function solverByImage(page, attemptsImages) {
 
     console.info(`Checking selection of other images ${typeImages}`);
 
-    clearTimeout(timeoutReloadImagesCaptcha);
-
-    timeoutReloadImagesCaptcha = setTimeout(async () => {
-      await reloadImagesCaptcha(page);
-    }, 1000 * 60);
-
     await (async () => {
       while (await verifyNewsImagesContainsObject(path, page)) {
-        await utils.delay(1000);
+        await utils.delay(500);
       }
     })();
 
@@ -546,8 +569,6 @@ async function solverByImage(page, attemptsImages) {
     console.info(`-------------------------${attemptsImages + 1}ª FINISHING | ${new Date().toLocaleTimeString('en-GB')}-------------------------`);
 
     lastImgPayload = imgPayload;
-
-    clearTimeout(timeoutReloadImagesCaptcha);
 
     if (errorSelect) {
       resetVariables();

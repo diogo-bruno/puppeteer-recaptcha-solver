@@ -22,10 +22,15 @@
     "car",
     "bus",
     "buses",
-    "traffic lights"
+    "traffic lights",
+    "boats",
+    "boat",
+    "bridges",
+    "bridg"
   ],
+  "firstImagesResolve": ["fire hydrants", "a fire hydrant", "boats", "parking meters", "palm trees", "tractors"],
   "resolveLengthImages": 0,
-  "maxAttemptsImages": 50,
+  "maxAttemptsImages": 25,
   "minScore": 0.5,
   "typesImages": {
     "cars": ["cars", "car", "vehicle"],
@@ -35,19 +40,21 @@
     "bus": ["bus", "school bus", "minibus", "omnibus", "trucks", "tourism"],
     "buses": ["bus", "school bus", "minibus", "omnibus", "trucks", "tourism"],
     "motorcycles": ["motorcycles", "motorcycle"],
-    "bicycles": ["bicycles", "bikecycle", "mountain bike", "bike", "velocipede", "bicycle frame"],
-    "crosswalks": ["crosswalk", "crosswalks", "pedestrian crossing", "crossing", "flooring"],
+    "bicycles": ["bicycles", "bicycle", "bikecycle", "mountain bike", "bike", "velocipede", "bicycle frame", "bicycle motocross", "bicycle wheel"],
+    "crosswalks": ["crosswalk", "crosswalks"],
     "statues": ["statue", "statues", "sculpture", "figure", "statuette"],
     "parking meters": ["parking meters", "parking meter"],
-    "traffic lights": ["traffic light", "traffic lights"],
+    "traffic lights": ["traffic light", "traffic lights", "semaphore", "lighthouse"],
     "taxi": ["taxis", "taxi", "yellow cap", "taxi-cap"],
     "taxis": ["taxis", "taxi", "yellow cap", "taxi-cap"],
     "a fire hydrant": ["hydrant", "hydrants", "fire hydrant", "a fire hydrant"],
     "fire hydrants": ["hydrant", "hydrants", "fire hydrant", "a fire hydrant"],
     "tractors": ["tractors", "tractor", "trator"],
     "stairs": ["stairs", "stair", "steps", "step"],
-    "palm trees": ["palm trees"],
+    "palm trees": ["palm trees", "palm tree"],
     "chimney": ["chimney", "chimneys"],
-    "chimneys": ["chimney", "chimneys"]
+    "chimneys": ["chimney", "chimneys"],
+    "boats": ["boats", "boat"],
+    "bridges": ["bridges", "bridg"]
   }
 }

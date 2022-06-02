@@ -22,10 +22,12 @@ async function puppeteerLaunch(pageUrl, headless) {
 
   const browser = await puppeteer.launch(optionsLaunch);
   const pageOne = (await browser.pages())[0];
+
   const page = await browser.newPage();
   await page.setDefaultNavigationTimeout(0);
   await page.setDefaultTimeout(0);
   await page.setCacheEnabled(false);
+  await pageOne.close();
   const session = await page.target().createCDPSession();
   await session.send('Page.enable');
   await session.send('Page.setWebLifecycleState', {state: 'active'});
@@ -42,9 +44,14 @@ async function puppeteerLaunch(pageUrl, headless) {
   });
 
   await page.goto(pageUrl, {waitUntil: 'load', timeout: 0});
-  await pageOne.close();
+
   console.info(`Open page ${pageUrl}`);
   await utils.delay(1000);
+
+  browser.on('disconnected', () => {
+    browser.disconnected = true;
+  });
+
   return browser;
 }
 

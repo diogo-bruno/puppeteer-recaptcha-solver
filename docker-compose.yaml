@@ -6,6 +6,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - '3030:3030'
+    volumes:
+      - './tmp:/usr/src/app/tmp'
+      - './screenshots:/usr/src/app/screenshots'
     environment:
       CHROME_PATH: /usr/bin/google-chrome
       HEADLESS: 'true'

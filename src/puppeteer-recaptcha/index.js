@@ -9,7 +9,7 @@ const getPageData = async (url, waitSelectorSucces, headless) => {
 
   const intervalCheck = setInterval(async () => {
     const labelError = await utils.existErrorRecaptcha(page);
-    if (labelError) {
+    if (labelError && !browser.disconnected) {
       console.info(`Error in recaptcha: ${labelError}`);
       await utils.clickCheckBoxRecaptcha(page);
     }
@@ -22,8 +22,10 @@ const getPageData = async (url, waitSelectorSucces, headless) => {
   await utils.delay(5000);
 
   try {
-    if (config.closePageFinal) await page.close();
-    if (config.closeBrowserFinal) await browser.close();
+    if (!browser.disconnected) {
+      if (config.closePageFinal) await page.close();
+      if (config.closeBrowserFinal) await browser.close();
+    }
   } catch (error) {}
 
   return dataPage;
