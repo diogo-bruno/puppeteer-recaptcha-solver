@@ -22,9 +22,7 @@ cd puppeteer-recaptcha-solver
 ```
 npm install
 npm start
-```
-
-```
+-or-
 docker-compose up
 ```
 
