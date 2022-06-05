@@ -6,6 +6,11 @@ async function solverByAudio(page) {
     let frames = await page.frames();
     const bframe = frames.find((frame) => frame.url().includes('api2/bframe'));
 
+    if (!bframe) {
+      console.error('Error: bframe not found');
+      return false;
+    }
+
     const audioButton = await bframe.$('#recaptcha-audio-button');
 
     if (!audioButton || audioButton.length === 0) {

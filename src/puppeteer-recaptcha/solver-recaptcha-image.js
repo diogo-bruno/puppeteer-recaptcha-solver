@@ -73,7 +73,10 @@ async function classifyImages(path, indexImg) {
   const containsStartsWith = (text) => {
     let contain = false;
     if (keys && keys.length) {
+      text = text.toLowerCase().replace(/[^\w\s]/gi, '');
       keys.forEach((key) => {
+        key = key.toLowerCase().replace(/[^\w\s]/gi, '');
+
         if (key.startsWith(text.toLowerCase()) && key.endsWith(text.toLowerCase())) contain = true;
       });
     }
@@ -302,7 +305,8 @@ async function verifyNewsImagesContainsObject(path, page) {
 
 async function selectImagesContainsObject(imagesSelect, page) {
   if (imagesSelect && imagesSelect.length) {
-    for (const elm of imagesSelect) {
+    //for (const elm of imagesSelect) {}
+    const promises = imagesSelect.map(async (elm) => {
       if (elm && elm.contem && elm.select && elm.index !== undefined) {
         await page.evaluate(async (itemElm) => {
           function rdn(min, max) {
@@ -326,15 +330,17 @@ async function selectImagesContainsObject(imagesSelect, page) {
                 const img = iframe.contentWindow.document.querySelectorAll('.rc-imageselect-target td')[index].querySelector('img');
                 return img && img.complete;
               },
-              {timeout: 20000},
+              {timeout: 40000},
               elm.index
             );
           } catch (error) {
             console.log(error);
+            return false;
           }
         }
       }
-    }
+    });
+    await Promise.all(promises);
   }
 }
 
@@ -462,6 +468,7 @@ async function solverByImage(page, attemptsImages) {
     if (valueRecaptcha) return true;
 
     const firstImagesResolve = config.firstImagesResolve;
+    let firstImagesResolveAttempts = 0;
 
     if (firstImagesResolve.length) {
       await getTypeAndSizeBoxSelectImages(page);
@@ -469,16 +476,15 @@ async function solverByImage(page, attemptsImages) {
       if (attemptsImages === 0 && (!firstImagesResolve.includes(typeImages) || lengthImages !== 9)) {
         await (async () => {
           while (!firstImagesResolve.includes(typeImages.toLowerCase()) || lengthImages !== 9) {
-            console.log(`Await for type images [${JSON.stringify(firstImagesResolve)}] and lengthImages === 9 : ${typeImages}`);
-            await page.evaluate(() => {
-              const iframe = document.querySelector('iframe[src*="api2/anchor"]');
-              if (!iframe) return false;
-              iframe.contentWindow.location.reload(true);
-            });
+            console.log(
+              `${firstImagesResolveAttempts + 1} -> Await for type images [${JSON.stringify(firstImagesResolve)}] and lengthImages === 9 -> ${typeImages} | ${lengthImages}`
+            );
+            await utils.reloadIframeRecaptcha(page);
             await page.waitForTimeout(2000);
             await utils.clickCheckBoxRecaptcha(page);
             await page.waitForTimeout(1000);
             await getTypeAndSizeBoxSelectImages(page);
+            firstImagesResolveAttempts++;
           }
         })();
       }
@@ -526,7 +532,7 @@ async function solverByImage(page, attemptsImages) {
       }
     })();
 
-    console.info(`Preparing image ${typeImages}`);
+    console.info(`Preparing image ${typeImages} | ${lengthImages}`);
 
     const path = await selectImagesObject(page);
 
@@ -550,7 +556,7 @@ async function solverByImage(page, attemptsImages) {
 
     await (async () => {
       while (await verifyNewsImagesContainsObject(path, page)) {
-        await utils.delay(500);
+        await utils.delay(100);
       }
     })();
 

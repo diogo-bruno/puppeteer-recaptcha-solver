@@ -9,6 +9,8 @@ require('console-stamp')(console, {
   },
 });
 
+require('dotenv').config();
+
 const ora = require('ora');
 const fs = require('fs');
 const {promisify} = require('util');
@@ -182,13 +184,15 @@ utils.args = [
   '--disable-backgrounding-occluded-windows',
   '--disable-renderer-backgrounding',
   '--disable-infobars',
-  '--disable-breakpad',
   '--no-zygote',
   '--enable-webgl',
   '--no-first-run',
-  '--deterministic-fetch',
   '--disable-features=IsolateOrigins',
 ];
+
+if (process.env.TOR_HOST) {
+  utils.args.push('--proxy-server=socks5://' + process.env.TOR_HOST + ':9050');
+}
 
 utils.randomHashString = function (length) {
   if (!length) length = 10;
@@ -370,6 +374,14 @@ utils.clickCheckBoxRecaptcha = async (page) => {
   } catch (error) {
     console.error(error);
   }
+};
+
+utils.reloadIframeRecaptcha = async (page) => {
+  await page.evaluate(() => {
+    const iframe = document.querySelector('iframe[src*="api2/anchor"]');
+    if (!iframe) return false;
+    iframe.contentWindow.location.reload(true);
+  });
 };
 
 module.exports = utils;

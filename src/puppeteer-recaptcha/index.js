@@ -5,13 +5,18 @@ const config = require('../../config.json');
 
 const getPageData = async (url, waitSelectorSucces, headless) => {
   const browser = await puppeteerLaunch(url, headless);
+
+  if (!browser) {
+    return false;
+  }
+
   const page = (await browser.pages())[0];
 
   const intervalCheck = setInterval(async () => {
     const labelError = await utils.existErrorRecaptcha(page);
     if (labelError && !browser.disconnected) {
       console.info(`Error in recaptcha: ${labelError}`);
-      await utils.clickCheckBoxRecaptcha(page);
+      await utils.reloadIframeRecaptcha(page);
     }
   }, 5000);
 

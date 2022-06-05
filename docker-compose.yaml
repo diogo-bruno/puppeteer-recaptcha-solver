@@ -1,14 +1,37 @@
 version: '3.8'
+
+name: 'recaptcha-solver'
+
 services:
+  tor-proxy:
+    container_name: 'tor-proxy'
+    image: dockage/tor-privoxy:latest
+    ports:
+      - '9050:9050' # Tor proxy
+      - '9051:9051' # Tor control port
+      - '8118:8118' # Privoxy
+    networks:
+      - network-recaptcha-solver
+    volumes:
+      - ./tor-data:/app/Browser/TorBrowser/Data/Tor
   puppeteer-recaptcha-solver:
+    container_name: 'puppeteer-recaptcha-solver'
     build:
       context: ./
       dockerfile: Dockerfile
     ports:
       - '3030:3030'
+    networks:
+      - network-recaptcha-solver
     volumes:
       - './tmp:/usr/src/app/tmp'
       - './screenshots:/usr/src/app/screenshots'
     environment:
       CHROME_PATH: /usr/bin/google-chrome
       HEADLESS: 'true'
+      # TOR_HOST: 'tor-proxy'
+
+networks:
+  network-recaptcha-solver:
+    external: false
+    name: network-recaptcha-solver
