@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 
-const port = 3030;
+const port = process.env.PORT || 3030;
 
 const resolveRecaptcha = async (opt) => {
   const headless = process.env.HEADLESS === 'true' || false;
