@@ -1,9 +1,8 @@
-const puppeteer = require('puppeteer-extra');
-const pluginStealth = require('puppeteer-extra-plugin-stealth');
+const puppeteer = require('puppeteer');
+
 const utils = require('../utils');
 
 async function puppeteerLaunch(pageUrl, headless) {
-  puppeteer.use(pluginStealth());
   console.info('Preparing init puppeteer launch\n\n\n');
 
   const optionsLaunch = {
@@ -20,11 +19,14 @@ async function puppeteerLaunch(pageUrl, headless) {
   }
 
   const browser = await puppeteer.launch(optionsLaunch);
-  const pageOne = (await browser.pages())[0];
+
+  const page = (await browser.pages())[0];
+
+  await page.setViewport({width:0, height:0});
 
   if (process.env.TOR_HOST) {
-    await pageOne.goto('https://check.torproject.org/');
-    const isUsingTor = await pageOne.$eval('body', (el) => el.innerHTML.includes('Congratulations. This browser is configured to use Tor'));
+    await page.goto('https://check.torproject.org/');
+    const isUsingTor = await page.$eval('body', (el) => el.innerHTML.includes('Congratulations. This browser is configured to use Tor'));
 
     if (!isUsingTor) {
       console.log('Not using Tor. Closing...');
@@ -33,11 +35,11 @@ async function puppeteerLaunch(pageUrl, headless) {
     }
   }
 
-  const page = await browser.newPage();
-  await page.setDefaultNavigationTimeout(0);
-  await page.setDefaultTimeout(0);
+  page.setDefaultNavigationTimeout(0);
+  page.setDefaultTimeout(0);
+
   await page.setCacheEnabled(false);
-  await pageOne.close();
+
   const session = await page.target().createCDPSession();
   await session.send('Page.enable');
   await session.send('Page.setWebLifecycleState', {state: 'active'});

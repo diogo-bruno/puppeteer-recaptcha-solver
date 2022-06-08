@@ -161,9 +161,6 @@ utils.getUserAgent = function () {
 
 utils.args = [
   '--renderer',
-  '--start-maximized',
-  '--window-position=0,0',
-  '--window-size=1920,1040',
   '--no-sandbox',
   '--disable-features=site-per-process',
   '--disable-site-isolation-trials',
@@ -188,6 +185,9 @@ utils.args = [
   '--enable-webgl',
   '--no-first-run',
   '--disable-features=IsolateOrigins',
+  '--incognito',
+  '--single-process',
+  '--no-zygote',
 ];
 
 if (process.env.TOR_HOST) {
@@ -376,12 +376,17 @@ utils.clickCheckBoxRecaptcha = async (page) => {
   }
 };
 
-utils.reloadIframeRecaptcha = async (page) => {
+utils.reloadIframeRecaptcha = async (page, clickCheckboxCaptcha) => {
   await page.evaluate(() => {
     const iframe = document.querySelector('iframe[src*="api2/anchor"]');
     if (!iframe) return false;
     iframe.contentWindow.location.reload(true);
   });
+
+  if (clickCheckboxCaptcha) {
+    await page.waitForTimeout(2000);
+    await utils.clickCheckBoxRecaptcha(page);
+  }
 };
 
 module.exports = utils;

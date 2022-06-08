@@ -30,5 +30,6 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 3030
+EXPOSE $PORT
+
 CMD [ "node", "src/index.js" ]

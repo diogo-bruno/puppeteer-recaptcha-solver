@@ -49,8 +49,8 @@
     "boat"
   ],
   "resolveLengthImages": 0,
-  "maxAttemptsImages": 25,
-  "minScore": 0.5,
+  "maxAttemptsImages": 15,
+  "minScore": 0.4,
   "typesImages": {
     "cars": ["cars", "car", "vehicle"],
     "car": ["cars", "car", "vehicle"],

@@ -27,6 +27,7 @@ services:
       - './tmp:/usr/src/app/tmp'
       - './screenshots:/usr/src/app/screenshots'
     environment:
+      PORT: '3030'
       CHROME_PATH: /usr/bin/google-chrome
       HEADLESS: 'true'
       # TOR_HOST: 'tor-proxy'

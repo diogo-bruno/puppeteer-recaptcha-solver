@@ -174,17 +174,21 @@ async function getTypeImages(page) {
   return text.toLowerCase();
 }
 
-async function reloadImagesCaptcha(page) {
+async function reloadImagesCaptcha(page, attemptsImages) {
   try {
-    await page.evaluate(() => {
-      function rdn(min, max) {
-        return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
-      }
-      const iframe = document.querySelector('iframe[src*="api2/bframe"]');
-      if (!iframe) return false;
-      return iframe.contentWindow.document.querySelector('#recaptcha-reload-button').click({delay: rdn(40, 100)});
-    });
-    await page.waitForTimeout(2000);
+    if (attemptsImages % 5 == 0) {
+      await utils.reloadIframeRecaptcha(page, true);
+    } else {
+      await page.evaluate(() => {
+        function rdn(min, max) {
+          return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
+        }
+        const iframe = document.querySelector('iframe[src*="api2/bframe"]');
+        if (!iframe) return false;
+        return iframe.contentWindow.document.querySelector('#recaptcha-reload-button').click({delay: rdn(40, 100)});
+      });
+    }
+    await page.waitForTimeout(1000);
   } catch (error) {
     console.log(error);
   }
@@ -212,10 +216,10 @@ async function getTypeAndSizeBoxSelectImages(page) {
   });
 }
 
-async function getInfosRecaptcha(page, reload) {
+async function getInfosRecaptcha(page, reload, attemptsImages) {
   if (!checkImageCorrect()) {
     if (reload) {
-      await reloadImagesCaptcha(page);
+      await reloadImagesCaptcha(page, attemptsImages);
     }
 
     imgPayload = await getImagePayload(page);
@@ -479,11 +483,11 @@ async function solverByImage(page, attemptsImages) {
             console.log(
               `${firstImagesResolveAttempts + 1} -> Await for type images [${JSON.stringify(firstImagesResolve)}] and lengthImages === 9 -> ${typeImages} | ${lengthImages}`
             );
-            await utils.reloadIframeRecaptcha(page);
-            await page.waitForTimeout(2000);
-            await utils.clickCheckBoxRecaptcha(page);
+            await utils.reloadIframeRecaptcha(page, true);
+
             await page.waitForTimeout(1000);
             await getTypeAndSizeBoxSelectImages(page);
+
             firstImagesResolveAttempts++;
           }
         })();
@@ -506,7 +510,7 @@ async function solverByImage(page, attemptsImages) {
       }
     }
 
-    await getInfosRecaptcha(page, reloadRecaptcha);
+    await getInfosRecaptcha(page, reloadRecaptcha, attemptsImages);
 
     await page.waitForTimeout(500);
 

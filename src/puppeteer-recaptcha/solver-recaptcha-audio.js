@@ -3,6 +3,10 @@ const utils = require('../utils');
 
 async function solverByAudio(page) {
   try {
+    await utils.reloadIframeRecaptcha(page, true);
+
+    await page.waitForTimeout(1500);
+
     let frames = await page.frames();
     const bframe = frames.find((frame) => frame.url().includes('api2/bframe'));
 

@@ -16,7 +16,7 @@ const getPageData = async (url, waitSelectorSucces, headless) => {
     const labelError = await utils.existErrorRecaptcha(page);
     if (labelError && !browser.disconnected) {
       console.info(`Error in recaptcha: ${labelError}`);
-      await utils.reloadIframeRecaptcha(page);
+      await utils.reloadIframeRecaptcha(page, true);
     }
   }, 5000);
 
