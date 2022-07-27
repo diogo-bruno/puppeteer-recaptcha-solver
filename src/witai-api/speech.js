@@ -16,7 +16,8 @@ async function getTextAudio(audioBytes) {
     return utils.trimText(response.data.text);
   } else {
     try {
-      const data = JSON.parse(`{"entities"` + response.data.split(`"entities"`)[1]);
+      const splitData = response.data.split(`"entities"`);
+      const data = JSON.parse(`{"entities"` + splitData[splitData.length - 1]);
       return utils.trimText(data.text);
     } catch (error) {}
   }
